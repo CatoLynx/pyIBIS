@@ -72,18 +72,21 @@ class DisplayManager(object):
 			artist = artist.strip()
 			title = title.strip()
 			
-			one_line = "%s - %s" % (artist, title)
-			
-			fits_in_one_line = False
-			for font in (fb2, fb1, fn2, fn1):
-				if font.get_width(one_line) <= 120:
-					fits_in_one_line = True
-					break
-			
-			if fits_in_one_line:
-				self.BUFFER = (one_line, )
+			if artist == "" and title == "":
+				self.BUFFER = ('', )
 			else:
-				self.BUFFER = (artist, title)
+				one_line = "%s - %s" % (artist, title)
+				
+				fits_in_one_line = False
+				for font in (fb2, fb1, fn2, fn1):
+					if font.get_width(one_line) <= 120:
+						fits_in_one_line = True
+						break
+				
+				if fits_in_one_line:
+					self.BUFFER = (one_line, )
+				else:
+					self.BUFFER = (artist, title)
 			
 			print "\n"
 		return True
