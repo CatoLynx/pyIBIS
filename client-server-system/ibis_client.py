@@ -37,12 +37,12 @@ class Client(object):
 			sock.close()
 		return reply
 	
-	def set_enabled(self, value):
+	def set_enabled(self, address, value):
 		"""
-		Enable or disable the displays
+		Enable or disable a display
 		"""
 		
-		return self.send_raw_message({'enable': value})
+		return self.send_raw_message({'address': address, 'enable': value})
 	
 	def set_stop_indicator(self, address, state):
 		"""
@@ -107,7 +107,7 @@ class Client(object):
 		Query the server for the text that is currently being displayed
 		"""
 		
-		current = self.send_raw_message({'query': 'current'})
+		current = self.send_raw_message({'query': 'current_text'})
 		current = dict([(int(key), value) for key, value in current.iteritems()])
 		return current
 	
@@ -122,10 +122,11 @@ class Client(object):
 	
 	def get_enabled(self):
 		"""
-		Query the server for the enabled state
+		Query the server for the enabled states
 		"""
 		
 		enabled = self.send_raw_message({'query': 'enabled'})
+		enabled = dict([(int(key), value) for key, value in enabled.iteritems()])
 		return enabled
 	
 	def get_stop_indicators(self):
@@ -136,6 +137,17 @@ class Client(object):
 		indicators = self.send_raw_message({'query': 'stop_indicators'})
 		indicators = dict([(int(key), value) for key, value in indicators.iteritems()])
 		return indicators
+	
+	def get_all(self):
+		"""
+		Query the server for all available status information
+		"""
+		
+		status = self.send_raw_message({'query': 'all'})
+		for subsection, subdict in status.iteritems():
+			subdict = dict([(int(key), value) for key, value in subdict.iteritems()])
+			status[subsection] = subdict
+		return status
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -154,11 +166,20 @@ def main():
 	client = Client(args.host, args.port)
 	
 	if args.state == 'on':
-		client.set_enabled(True)
+		if args.display:
+			client.set_enabled(args.display, True)
+		else:
+			client.set_enabled(-1, True)
 	elif args.state == 'off':
-		client.set_enabled(False)
+		if args.display:
+			client.set_enabled(args.display, False)
+		else:
+			client.set_enabled(-1, False)
 	elif args.state == 'toggle':
-		client.set_enabled('toggle')
+		if args.display:
+			client.set_enabled(args.display, 'toggle')
+		else:
+			client.set_enabled(-1, 'toggle')
 	
 	if args.type == 'text':
 		client.set_text(args.display, args.value, priority = args.priority, client = args.client)

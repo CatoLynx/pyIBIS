@@ -39,22 +39,18 @@ class Listener(object):
 					message = json.loads(data)
 					success = True
 					if 'enable' in message.keys():
-						if message['enable'] == 'toggle':
-							try:
-								self.controller.set_enabled(not self.controller.enabled)
-							except:
-								success = False
-						else:
-							try:
-								self.controller.set_enabled(bool(message['enable']))
-								success = True
-							except:
-								success = False
-								import traceback
-								traceback.print_exc()
+						try:
+							if message['enable'] == 'toggle':
+								state = not self.controller.get_enabled(int(message['address']))
+							else:
+								state = bool(message['enable'])
+							
+							success = self.controller.set_enabled(int(message['address']), state)
+						except:
+							success = False
 						self.reply(conn, {'success': success})
 					elif 'query' in message.keys():
-						if message['query'] == 'current':
+						if message['query'] == 'current_text':
 							self.reply(conn, self.controller.current_text)
 						elif message['query'] == 'buffer':
 							self.reply(conn, self.controller.buffer)
@@ -62,6 +58,14 @@ class Listener(object):
 							self.reply(conn, self.controller.enabled)
 						elif message['query'] == 'stop_indicators':
 							self.reply(conn, self.controller.stop_indicators)
+						elif message['query'] == 'all':
+							status = {
+								'buffer': self.controller.buffer,
+								'current_text': self.controller.current_text,
+								'enabled': self.controller.enabled,
+								'stop_indicators': self.controller.stop_indicators
+							}
+							self.reply(conn, status)
 					elif 'stop_indicator' in message.keys():
 						try:
 							if message['stop_indicator'] == 'toggle':
@@ -95,7 +99,6 @@ class Controller(object):
 	def __init__(self, master):
 		self.master = master
 		self.running = False
-		self.enabled = True
 		
 		self.buffer = {
 			0: {
@@ -130,6 +133,13 @@ class Controller(object):
 				'last_refresh': 0.0,
 				'last_update': 0.0
 			}
+		}
+		
+		self.enabled = {
+			0: True,
+			1: True, 
+			2: True,
+			3: True
 		}
 		
 		self.current_text = {
@@ -203,7 +213,8 @@ class Controller(object):
 		for address, state in data['stop_indicators'].iteritems():
 			self.set_stop_indicator(int(address), state)
 		
-		self.enabled = data['enabled']
+		for address, state in data['enabled'].iteritems():
+			self.set_enabled(int(address), state)
 		
 		if self.VERBOSE:
 			print "Successfully loaded configuration"
@@ -217,20 +228,36 @@ class Controller(object):
 		
 		self.save_config()
 	
-	def set_enabled(self, value):
+	def set_enabled(self, address, value):
 		"""
-		Enable or disable the displays
+		Enable or disable a display
 		"""
 		
-		self.enabled = value
+		if address == -1:
+			for i in range(4):
+				self.set_enabled(i, value)
+			return
 		
-		if not self.enabled:
-			self.send_text(-1, None)
+		self.enabled[address] = value
+		
+		if not self.enabled[address]:
+			self.send_text(address, None) # This seems to fail quite often! Why?
 		
 		if self.VERBOSE:
-			print "Power state changed to %s" % str(value)
+			print "Power state of display %i changed to %s" % (address, str(value))
 		
 		self.save_config()
+	
+	def get_enabled(self, address):
+		"""
+		Return the enabled state for the given address and perform some logic
+		in case we're dealing with address -1
+		"""
+		
+		if address == -1:
+			return self.enabled[0] and self.enabled[1] and self.enabled[2] and self.enabled[3]
+		else:
+			return self.enabled.get(address, False)
 	
 	def send_text(self, address, text):
 		"""
@@ -461,8 +488,8 @@ class Controller(object):
 		"""
 		
 		while self.running:
-			if self.enabled:
-				for address in range(4):
+			for address in range(4):
+				if self.enabled[address]:
 					data = self.buffer[address]
 					message = data['message']
 					self.send_message(address, message)
