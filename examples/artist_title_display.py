@@ -31,8 +31,7 @@ class DisplayManager(object):
 		
 		while True:
 			cur_text = self.BUFFER[cur_index]
-			print cur_text
-			#self.master.send_next_stop__003c(cur_text)
+			self.master.send_next_stop__003c(cur_text)
 			time.sleep(self.INTERVAL)
 			
 			if cur_index == len(self.BUFFER) - 1:
@@ -102,7 +101,7 @@ def main():
 	else:
 		entries = None
 	
-	master = None#ibis.IBISMaster(args.device)
+	master = ibis.IBISMaster(args.device)
 	mgr = DisplayManager(master, entries = entries)
 	mgr.INTERVAL = args.interval
 	
