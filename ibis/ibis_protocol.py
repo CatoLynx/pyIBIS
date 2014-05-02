@@ -1,4 +1,5 @@
 # Copyright (C) 2014 Julian Metzler
+# -*- coding: utf-8 -*-
 # See the LICENSE file for the full license.
 
 """
