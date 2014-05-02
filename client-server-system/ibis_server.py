@@ -227,6 +227,7 @@ class Controller(object):
 			print "Stop indicator on display %i set to %s" % (address, str(value))
 		
 		self.save_config()
+		return True
 	
 	def set_enabled(self, address, value):
 		"""
@@ -236,7 +237,7 @@ class Controller(object):
 		if address == -1:
 			for i in range(4):
 				self.set_enabled(i, value)
-			return
+			return True
 		
 		self.enabled[address] = value
 		
@@ -247,6 +248,7 @@ class Controller(object):
 			print "Power state of display %i changed to %s" % (address, str(value))
 		
 		self.save_config()
+		return True
 	
 	def get_enabled(self, address):
 		"""
