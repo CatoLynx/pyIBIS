@@ -22,15 +22,17 @@ class DisplayManager(object):
 	BUFFER = ("No text here yet!", )
 	INTERVAL = 3.0
 	
-	def __init__(self, master):
+	def __init__(self, master, entries = None):
 		self.master = master
+		self.entries = entries
 	
 	def process_buffer(self):
 		cur_index = 0
 		
 		while True:
 			cur_text = self.BUFFER[cur_index]
-			self.master.send_next_stop__003c(cur_text)
+			print cur_text
+			#self.master.send_next_stop__003c(cur_text)
 			time.sleep(self.INTERVAL)
 			
 			if cur_index == len(self.BUFFER) - 1:
@@ -46,8 +48,30 @@ class DisplayManager(object):
 		fn2 = ibis.simulation.DisplayFont("../simulation-font/narrow/.fontmap", spacing = 2)
 		fn1 = ibis.simulation.DisplayFont("../simulation-font/narrow/.fontmap", spacing = 1)
 		while True:
-			artist = raw_input("Artist: ")
-			title = raw_input("Title: ")
+			if self.entries:
+				for index, entry in enumerate(self.entries):
+					print index + 1, " - ".join(entry)
+				print ""
+				choice = raw_input("Your choice: ")
+				try:
+					num = int(choice)
+				except ValueError:
+					num = -1
+			else:
+				num = -1
+			
+			if num == -1:
+				artist = raw_input("Artist: ")
+				title = raw_input("Title: ")
+			else:
+				try:
+					artist, title = self.entries[num - 1]
+				except IndexError:
+					print "List index out of range!"
+					continue
+			
+			artist = artist.strip()
+			title = title.strip()
 			
 			one_line = "%s - %s" % (artist, title)
 			
@@ -69,10 +93,17 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--device', type = str, default = "/dev/ttyUSB0", help = "The serial device to use for IBIS communication")
 	parser.add_argument('-i', '--interval', type = float, default = 3.0, help = "The interval between artist and title display (in seconds)")
+	parser.add_argument('-f', '--file', type = str, help = "The filename of a text file to load entries from. Format: Multiple lines, Artist | Title")
 	args = parser.parse_args()
 	
-	master = ibis.IBISMaster(args.device)
-	mgr = DisplayManager(master)
+	if args.file:
+		with open(args.file, 'r') as f:
+			entries = [[item.strip() for item in entry.rstrip("\n").split("|")] for entry in f.readlines()]
+	else:
+		entries = None
+	
+	master = None#ibis.IBISMaster(args.device)
+	mgr = DisplayManager(master, entries = entries)
 	mgr.INTERVAL = args.interval
 	
 	thread.start_new_thread(mgr.process_buffer, ())
