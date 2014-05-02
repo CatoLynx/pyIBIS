@@ -272,8 +272,10 @@ class DisplaySimulator(object):
 		"""
 		
 		font = self.choose_font(text)
+		overflow = False
 		
 		while font.get_width(text) > self.width:
+			overflow = True
 			text = text[:-1]
 		
 		text_data = font.generate_text_data(text)
@@ -293,6 +295,7 @@ class DisplaySimulator(object):
 		
 		gen = DisplayFontGenerator(dotsize, dotspacing)
 		gen.generate_image(text_data, outfile, inactive_color, active_color, bg_color)
+		return overflow
 
 def main():
 	pass
