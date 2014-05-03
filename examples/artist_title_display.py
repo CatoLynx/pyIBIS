@@ -30,7 +30,12 @@ class DisplayManager(object):
 		cur_index = 0
 		
 		while True:
-			cur_text = self.BUFFER[cur_index]
+			try:
+				cur_text = self.BUFFER[cur_index]
+			except IndexError:
+				cur_index = 0
+				cur_text = self.BUFFER[cur_index]
+			
 			self.master.send_next_stop__003c(cur_text)
 			time.sleep(self.INTERVAL)
 			
@@ -75,13 +80,16 @@ class DisplayManager(object):
 			if artist == "" and title == "":
 				self.BUFFER = ('', )
 			else:
-				one_line = "%s - %s" % (artist, title)
-				
-				fits_in_one_line = False
-				for font in (fb2, fb1, fn2, fn1):
-					if font.get_width(one_line) <= 120:
-						fits_in_one_line = True
-						break
+				if artist != "" and title != "":
+					one_line = "%s - %s" % (artist, title)
+					fits_in_one_line = False
+					for font in (fb2, fb1, fn2, fn1):
+						if font.get_width(one_line) <= 120:
+							fits_in_one_line = True
+							break
+				else:
+					one_line = "%s%s" % (artist, title)
+					fits_in_one_line = True
 				
 				if fits_in_one_line:
 					self.BUFFER = (one_line, )
