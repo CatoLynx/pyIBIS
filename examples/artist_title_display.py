@@ -19,7 +19,7 @@ import thread
 import time
 
 class DisplayManager(object):
-	BUFFER = ("No text here yet!", )
+	BUFFER = ("", )
 	INTERVAL = 3.0
 	
 	def __init__(self, master, entries = None):
