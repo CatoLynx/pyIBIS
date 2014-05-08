@@ -8,7 +8,7 @@ Setting:
 - Music event
 - You are in charge of the music
 - You have an IBIS display on the stage
-- You want it to display the yrics to the current song
+- You want it to display the lyrics to the current song
 
 That's what this script is for.
 """
