@@ -11,8 +11,8 @@ You can easily install pyIBIS using the Python Package Index. Just type:
 To use it in your code, just `import ibis`.
 
 ##Client-Server System
-I built a client-server system which is useful if you have some IBIS displays in your room and you want to control them over your local network. The both scripts don't come with the PyPi package, so you have to get them from the repository.
-Both `ibis_server.py` and `ibis_client.py` scripts can be run directly in a terminal. To see how to use them, use the `-h` flag on them or read the source code.
+I built a client-server system which is useful if you have some IBIS displays in your room and you want to control them over your local network.
+The library contains `Client` and `Server` classes, to see how to use them, check out the `cmdline_client.py` and `cmdline_server.py` scripts in the `examples` folder.
 
 ##Graphical Display Simulation
 **Note:** For the simulator to work, you need to have the `PIL` module installed.
