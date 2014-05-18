@@ -505,34 +505,19 @@ class Controller(object):
 		self.save_config()
 		self.running = False
 
-def main():
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-v', '--verbose', action = 'store_true')
-	parser.add_argument('-d', '--debug', action = 'store_true')
-	parser.add_argument('-s', '--selftest', action = 'store_true')
-	parser.add_argument('-t', '--timeout', type = int, default = 120)
-	parser.add_argument('-sp', '--serial-port', type = str, default = "/dev/ttyUSB0")
-	parser.add_argument('-p', '--port', type = int, default = 4242)
-	args = parser.parse_args()
-	
-	gpio_pinmap = {
-		0: 28,
-		1: 29,
-		2: 31,
-		3: 30
-	}
-	
-	master = ibis.IBISMaster(args.serial_port, gpio_pinmap = gpio_pinmap)
-	controller = Controller(master)
-	controller.TIMEOUT = args.timeout
-	controller.VERBOSE = args.verbose
-	controller.DEBUG = args.debug
-	if args.selftest:
-		controller.selftest()
+class Server(object):
+	def __init__(self, serial_port, port = 4242, timeout = 120, gpio_pinmap = {}, verbose = False, debug = False, selftest = False):
+		self.master = ibis.IBISMaster(serial_port, gpio_pinmap = gpio_pinmap)
+		self.controller = Controller(self.master)
+		self.controller.TIMEOUT = timeout
+		self.controller.VERBOSE = verbose
+		self.controller.DEBUG = debug
 		
-	thread.start_new_thread(controller.run, ())
-	listener = Listener(controller, port = args.port)
-	listener.run()
-
-if __name__ == "__main__":
-	main()
+		if selftest:
+			self.controller.selftest()
+		
+		self.listener = Listener(self.controller, port = port)
+	
+	def run(self):
+		thread.start_new_thread(self.controller.run, ())
+		self.listener.run()
