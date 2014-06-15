@@ -12,9 +12,15 @@ def _receive_datagram(sock):
 	# Receive and parse an incoming datagram (prefixed with its length)
 	try:
 		length = int(sock.recv(4))
-		raw_data = sock.recv(length)
+		
+		raw_data = ""
+		read_length = 0
+		while read_length < length:
+			part = sock.recv(1024)
+			raw_data += part
+			read_length += len(part)
+		
 		datagram = json.loads(raw_data)
-		print datagram
 	except:
 		return None
 	return datagram
@@ -24,5 +30,4 @@ def _send_datagram(sock, data):
 	raw_data = json.dumps(data)
 	length = len(raw_data)
 	datagram = "%04i%s" % (length, raw_data)
-	print datagram
 	sock.sendall(datagram)
