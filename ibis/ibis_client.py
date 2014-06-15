@@ -8,10 +8,11 @@ Client for the client-server system
 """
 
 import argparse
-import json
 import re
 import socket
 import time
+
+from .ibis_utils import _receive_datagram, _send_datagram
 
 class Client(object):
 	def __init__(self, host, port = 4242, timeout = 5.0):
@@ -26,15 +27,18 @@ class Client(object):
 		"""
 		
 		reply = None
+		
 		try:
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			sock.settimeout(self.timeout)
 			sock.connect((self.host, self.port))
-			sock.sendall(json.dumps(message))
+			_send_datagram(sock, message)
+			
 			if expect_reply:
-				reply = json.loads(sock.recv(4096))
+				reply = _receive_datagram(sock)
 		finally:
 			sock.close()
+		
 		return reply
 	
 	def set_enabled(self, address, value):

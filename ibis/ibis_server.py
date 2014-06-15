@@ -14,6 +14,8 @@ import socket
 import thread
 import time
 
+from .ibis_utils import _receive_datagram, _send_datagram
+
 class Listener(object):
 	def __init__(self, controller, port = 4245):
 		self.controller = controller
@@ -21,24 +23,30 @@ class Listener(object):
 		self.running = False
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	
-	def reply(self, connection, data):
-		connection.sendall(json.dumps(data))
-	
 	def run(self):
 		self.running = True
+		
+		# Open the network socket and listen
 		self.socket.bind(('', self.port))
 		print "Listening on port %i" % self.port
 		self.socket.listen(1)
+		
 		try:
 			while self.running:
 				try:
+					# Wait for someone to connect
 					conn, addr = self.socket.accept()
 					print "Accepted connection from %s on port %i" % addr
-					data = conn.recv(4096)
 					
-					message = json.loads(data)
+					# Load the datagram
+					message = _receive_datagram(conn)
+					
+					if message is None:
+						# We received an invalid datagram, just discard it
+						continue
+					
 					success = True
-					if 'enable' in message.keys():
+					if 'enable' in message:
 						try:
 							if message['enable'] == 'toggle':
 								state = not self.controller.get_enabled(int(message['address']))
@@ -48,16 +56,16 @@ class Listener(object):
 							success = self.controller.set_enabled(int(message['address']), state)
 						except:
 							success = False
-						self.reply(conn, {'success': success})
-					elif 'query' in message.keys():
+						_send_datagram(conn, {'success': success})
+					elif 'query' in message:
 						if message['query'] == 'current_text':
-							self.reply(conn, self.controller.current_text)
+							_send_datagram(conn, self.controller.current_text)
 						elif message['query'] == 'buffer':
-							self.reply(conn, self.controller.buffer)
+							_send_datagram(conn, self.controller.buffer)
 						elif message['query'] == 'enabled':
-							self.reply(conn, self.controller.enabled)
+							_send_datagram(conn, self.controller.enabled)
 						elif message['query'] == 'stop_indicators':
-							self.reply(conn, self.controller.stop_indicators)
+							_send_datagram(conn, self.controller.stop_indicators)
 						elif message['query'] == 'all':
 							status = {
 								'buffer': self.controller.buffer,
@@ -65,8 +73,8 @@ class Listener(object):
 								'enabled': self.controller.enabled,
 								'stop_indicators': self.controller.stop_indicators
 							}
-							self.reply(conn, status)
-					elif 'stop_indicator' in message.keys():
+							_send_datagram(conn, status)
+					elif 'stop_indicator' in message:
 						try:
 							if message['stop_indicator'] == 'toggle':
 								state = not self.controller.stop_indicators[message['address']]
@@ -76,13 +84,13 @@ class Listener(object):
 							success = self.controller.set_stop_indicator(int(message['address']), state)
 						except:
 							success = False
-						self.reply(conn, {'success': success})
+						_send_datagram(conn, {'success': success})
 					else:
 						try:
 							success = self.controller.set_message(message['address'], message['message'], priority = message.get('priority', 0), client = message.get('client', addr[0]))
 						except:
 							success = False
-						self.reply(conn, {'success': success})
+						_send_datagram(conn, {'success': success})
 				except KeyboardInterrupt:
 					self.quit()
 		finally:
