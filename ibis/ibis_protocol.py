@@ -159,11 +159,3 @@ class IBISMaster(object):
 		
 		message = "zI%i%s" % (blocks, next_stop)
 		return self.send_message(message)
-
-def main():
-	import time
-	master = IBISMaster("/dev/ttyUSB0")
-	master.send_next_stop__003c("")
-
-if __name__ == "__main__":
-	main()
