@@ -269,6 +269,7 @@ class DisplaySimulator(object):
 	def generate_image(self, text, outfile, dotsize = 47, dotspacing = 8, inactive_color = (64, 64, 64), active_color = (192, 255, 0), bg_color = (0, 0, 0)):
 		"""
 		Generate an image representing the given text
+		Returns an overflow flag and the dot data for analytical purposes
 		"""
 		
 		font = self.choose_font(text)
@@ -295,7 +296,7 @@ class DisplaySimulator(object):
 		
 		gen = DisplayFontGenerator(dotsize, dotspacing)
 		gen.generate_image(text_data, outfile, inactive_color, active_color, bg_color)
-		return overflow
+		return overflow, text_data['dots']
 
 def main():
 	pass
