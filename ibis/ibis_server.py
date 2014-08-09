@@ -461,36 +461,25 @@ class Controller(object):
 	def selftest(self):
 		self.send_text(-1, None)
 		time.sleep(2)
+		
+		for i in range(4):
+			self.set_stop_indicator(i, True)
+		
 		self.send_text(-1, "IBIS Server")
 		time.sleep(2)
 		self.send_text(-1, "by Mezgrman")
 		time.sleep(2)
 		self.send_text(-1, "www.mezgrman.de")
 		time.sleep(2)
+		
 		for i in range(4):
 			self.send_text(i, "Display %i" % i)
+		
 		time.sleep(5)
-		"""self.send_text(-1, "0" * 16)
-		time.sleep(1)
-		self.send_text(-1, "1" * 16)
-		time.sleep(1)
-		self.send_text(-1, "2" * 16)
-		time.sleep(1)
-		self.send_text(-1, "3" * 16)
-		time.sleep(1)
-		self.send_text(-1, "4" * 16)
-		time.sleep(1)
-		self.send_text(-1, "5" * 16)
-		time.sleep(1)
-		self.send_text(-1, "6" * 16)
-		time.sleep(1)
-		self.send_text(-1, "7" * 16)
-		time.sleep(1)
-		self.send_text(-1, "8" * 16)
-		time.sleep(1)
-		self.send_text(-1, "9" * 16)
-		time.sleep(1)"""
 		self.send_text(-1, None)
+		
+		for i in range(4):
+			self.set_stop_indicator(i, False)
 	
 	def process_buffer(self):
 		"""
