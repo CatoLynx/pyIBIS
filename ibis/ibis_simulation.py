@@ -153,9 +153,14 @@ class DisplayFontGenerator(object):
 		for y, row in enumerate(dots):
 			for x, state in enumerate(row):
 				color = active_color if state else inactive_color
-				center_x, center_y = self.get_real_coordinates(x, y)
-				box = self.get_bounding_box(center_x, center_y, self.dotsize)
-				draw.ellipse(box, fill = color)
+				
+				# Workaround because with dotsize 1 ellipses become invisible
+				if self.dotsize > 1:
+					center_x, center_y = self.get_real_coordinates(x, y)
+					box = self.get_bounding_box(center_x, center_y, self.dotsize)
+					draw.ellipse(box, fill = color)
+				else:
+					draw.point((x, y), fill = color)
 		
 		if type(outfile) is str:
 			with open(outfile.encode('utf-8'), 'wb') as f:
