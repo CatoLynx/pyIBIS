@@ -30,7 +30,7 @@ def main():
 	parser.add_argument('-p', '--port', type = int, default = 4242)
 	parser.add_argument('-d', '--display', type = int, choices = (0, 1, 2, 3))
 	parser.add_argument('-pr', '--priority', type = int, default = 0)
-	parser.add_argument('-cl', '--client', type = str, default = "countdown.py")
+	parser.add_argument('-cl', '--client', type = str, default = "random_train.py")
 	parser.add_argument('-si', '--sequence-interval', type = int, default = 5)
 	parser.add_argument('-db', '--database', type = str, default = "db_stations.db")
 	parser.add_argument('-j', '--jingle', type = str, default = "station_jingle.wav")
@@ -45,7 +45,6 @@ def main():
 	cur = db.cursor()
 	cur.execute("SELECT * FROM `stations`")
 	stations = [row[1] for row in cur.fetchall()]
-	has_stopped = True
 	
 	while True:
 		num_stops = random.randint(3, 20)
@@ -53,6 +52,7 @@ def main():
 		target = stops[-1]
 		train_type = random.choice(["RB", "RE", "S"])
 		train_number = random.randint(1, 99)
+		has_stopped = True
 		
 		print "%s%i %s" % (train_type, train_number, target)
 		
