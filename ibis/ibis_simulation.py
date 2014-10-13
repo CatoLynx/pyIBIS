@@ -277,6 +277,8 @@ class DisplaySimulator(object):
 		Returns an overflow flag and the dot data for analytical purposes
 		"""
 		
+		stripped_text = text.strip()
+		text = stripped_text if stripped_text else text
 		font = self.choose_font(text)
 		overflow = False
 		
