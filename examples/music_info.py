@@ -12,7 +12,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 def main():
 	def _on_properties_changed(self, *_args, **kw):
 		if _args and 'PlaybackStatus' in _args[1] and _args[1]['PlaybackStatus'] != 'Playing':
-			client.set_text(args.display, "Paused", priority = args.priority, client = args.client)
+			client.set_text(args.display, "Paused", priority = args.pause_priority, client = args.client)
 		else:
 			data = player.Metadata
 			title = unicode(data['xesam:title'])
@@ -25,13 +25,14 @@ def main():
 			sequence.append(client.make_text(title))
 			sequence.append(client.make_text(artist))
 			sequence.append(client.make_text("%s (%i)" % (album, year)))
-			client.set_sequence(args.display, sequence, args.sequence_interval, priority = args.priority, client = args.client)
+			client.set_sequence(args.display, sequence, args.sequence_interval, priority = args.music_priority, client = args.client)
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-host', '--host', type = str, default = "localhost")
 	parser.add_argument('-p', '--port', type = int, default = 4242)
 	parser.add_argument('-d', '--display', type = int, choices = (0, 1, 2, 3))
-	parser.add_argument('-pr', '--priority', type = int, default = 0)
+	parser.add_argument('-mpr', '--music_priority', type = int, default = 0)
+	parser.add_argument('-ppr', '--pause_priority', type = int, default = 0)
 	parser.add_argument('-cl', '--client', type = str, default = "music_info.py")
 	parser.add_argument('-pl', '--player', type = str, default = "spotify")
 	parser.add_argument('-si', '--sequence-interval', type = int, default = 3)
