@@ -13,6 +13,7 @@ def main():
 	def _on_properties_changed(self, *_args, **kw):
 		if _args and 'PlaybackStatus' in _args[1] and _args[1]['PlaybackStatus'] != 'Playing':
 			client.set_text(args.display, "Paused", priority = args.pause_priority, client = args.client)
+			client.set_stop_indicator(2, False)
 		else:
 			data = player.Metadata
 			title = unicode(data['xesam:title'])
@@ -26,6 +27,7 @@ def main():
 			sequence.append(client.make_text(artist))
 			sequence.append(client.make_text("%s (%i)" % (album, year)))
 			client.set_sequence(args.display, sequence, args.sequence_interval, priority = args.music_priority, client = args.client)
+			client.set_stop_indicator(2, True)
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-host', '--host', type = str, default = "localhost")
