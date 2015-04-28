@@ -22,8 +22,9 @@ class DisplayManager(object):
 	BUFFER = ("", )
 	INTERVAL = 3.0
 	
-	def __init__(self, master, entries = None):
+	def __init__(self, master = None, wrapper = None, entries = None):
 		self.master = master
+		self.wrapper = wrapper
 		self.entries = entries
 	
 	def process_buffer(self):
@@ -36,7 +37,11 @@ class DisplayManager(object):
 				cur_index = 0
 				cur_text = self.BUFFER[cur_index]
 			
-			self.master.send_next_stop__003c(cur_text)
+			if self.master:
+				self.master.send_next_stop__003c(cur_text)
+			elif self.wrapper:
+				self.wrapper.send_message(cur_text)
+			
 			time.sleep(self.INTERVAL)
 			
 			if cur_index == len(self.BUFFER) - 1:
@@ -104,6 +109,8 @@ def main():
 	parser.add_argument('-d', '--device', type = str, default = "/dev/ttyUSB0", help = "The serial device to use for IBIS communication")
 	parser.add_argument('-i', '--interval', type = float, default = 3.0, help = "The interval between artist and title display (in seconds)")
 	parser.add_argument('-f', '--file', type = str, help = "The filename of a text file to load entries from. Format: Multiple lines, Artist | Title")
+	parser.add_argument('-s', '--server', type = str, help = "The host for server communication")
+	parser.add_argument('-p', '--port', type = int, default = 1337, help = "The port for server communication")
 	args = parser.parse_args()
 	
 	if args.file:
@@ -112,8 +119,13 @@ def main():
 	else:
 		entries = None
 	
-	master = ibis.IBISMaster(args.device)
-	mgr = DisplayManager(master, entries = entries)
+	if args.server:
+		wrapper = ibis.EthernetWrapper(args.server, args.port)
+		mgr = DisplayManager(wrapper = wrapper, entries = entries)
+	else:
+		master = ibis.IBISMaster(args.device)
+		mgr = DisplayManager(master = master, entries = entries)
+	
 	mgr.INTERVAL = args.interval
 	
 	thread.start_new_thread(mgr.process_buffer, ())

@@ -1,0 +1,62 @@
+/*
+Simple Ethernet wrapper for the IBIS protocol.
+(C) 2015 Julian Metzler
+*/
+
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte ETH_MAC[] = {0xC0, 0xFF, 0xEE, 0xC0, 0xFF, 0xEE};
+short ETH_PORT = 1337;
+
+EthernetServer ibisServer(ETH_PORT);
+
+void sendIBIS003c(char* text) {
+  char datagram[150], datagramFormat[10];
+  short length = strlen(text);
+  short blocks = length / 4;
+  short remainder = length % 4;
+  
+  if(remainder) {
+    blocks += 1;
+  }
+  
+  sprintf(datagramFormat, "zI%i%%-%is", blocks, blocks * 4);
+  sprintf(datagram, datagramFormat, text);
+  Serial.print(datagram);
+}
+
+void setup() {
+  Serial.begin(1200, SERIAL_7E2);
+  sendIBIS003c("Obtaining IP...");
+  
+  if(Ethernet.begin(ETH_MAC) == 0) {
+    sendIBIS003c("DHCP failed");
+    for(;;);
+  }
+  
+  IPAddress currentIP = Ethernet.localIP();
+  char ipText[20];
+  sprintf(ipText, "%i.%i.%i.%i:%i", currentIP[0], currentIP[1], currentIP[2], currentIP[3], ETH_PORT);
+  sendIBIS003c(ipText);
+}
+
+void loop() {
+  // Wait for connection
+  EthernetClient client = ibisServer.available();
+  char message[150] = {0};
+  short messagePos = 0;
+  if(client) {
+    while(client.connected()) {
+      if(client.available() > 0) {
+        // Read data
+        char thisChar = client.read();
+        message[messagePos] = thisChar;
+        messagePos++;
+      }
+    }
+    
+    // Send the message to the display
+    sendIBIS003c(message);
+  }
+}

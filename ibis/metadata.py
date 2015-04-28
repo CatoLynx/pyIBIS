@@ -2,7 +2,7 @@
 # See the LICENSE file for the full license.
 
 name = "pyIBIS"
-version = "1.4.6"
+version = "1.4.7"
 description = "A Python library for controlling IBIS displays"
 license = "AGPLv3"
 author = "Julian Metzler"

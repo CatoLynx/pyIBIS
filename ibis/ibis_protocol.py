@@ -8,6 +8,7 @@ Main protocol library
 
 import serial
 import time
+from ibis_utils import prepare_text
 
 # Try importing the GPIO lib in case we're on a Raspberry Pi (to control the stop indicators)
 try:
@@ -58,26 +59,6 @@ class IBISMaster(object):
 		message += chr(check_byte)
 		return message
 	
-	def prepare_text(self, message):
-		def _do_replace(message):
-			message = message.replace(u"ä", "{")
-			message = message.replace(u"ö", "|")
-			message = message.replace(u"ü", "}")
-			message = message.replace(u"ß", "~")
-			message = message.replace(u"Ä", "[")
-			message = message.replace(u"Ö", "\\")
-			message = message.replace(u"Ü", "]")
-			message = message.encode('utf-8')
-			return message
-		
-		try:
-			message = _do_replace(message)
-		except UnicodeDecodeError:
-			message = message.decode('utf-8')
-			message = _do_replace(message)
-		
-		return message
-	
 	def set_stop_indicator(self, address, value):
 		if not HAVE_GPIO:
 			return False
@@ -123,7 +104,7 @@ class IBISMaster(object):
 		return self.send_message(message)
 	
 	def send_target_text__003a(self, text):
-		text = self.prepare_text(text)
+		text = prepare_text(text)
 		blocks, remainder = divmod(len(text), 16)
 		
 		if remainder:
@@ -134,7 +115,7 @@ class IBISMaster(object):
 		return self.send_message(message)
 	
 	def send_target_text__021(self, text, id):
-		text = self.prepare_text(text)
+		text = prepare_text(text)
 		blocks, remainder = divmod(len(text), 16)
 		
 		if remainder:
@@ -145,12 +126,12 @@ class IBISMaster(object):
 		return self.send_message(message)
 	
 	def send_next_stop__009(self, next_stop, length = 16):
-		next_stop = self.prepare_text(next_stop)
+		next_stop = prepare_text(next_stop)
 		message = "v%s" % next_stop.upper().ljust(length)
 		return self.send_message(message)
 	
 	def send_next_stop__003c(self, next_stop):
-		next_stop = self.prepare_text(next_stop)
+		next_stop = prepare_text(next_stop)
 		blocks, remainder = divmod(len(next_stop), 4)
 		
 		if remainder:

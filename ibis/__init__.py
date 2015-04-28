@@ -5,4 +5,5 @@ from .metadata import version as __version__
 from .ibis_protocol import *
 from .ibis_server import Server
 from .ibis_client import Client
+from .ibis_ethernet import EthernetWrapper
 import ibis_simulation as simulation
