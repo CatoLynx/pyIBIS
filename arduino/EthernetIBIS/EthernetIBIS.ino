@@ -21,9 +21,18 @@ void sendIBIS003c(char* text) {
     blocks += 1;
   }
   
-  sprintf(datagramFormat, "zI%i%%-%is", blocks, blocks * 4);
+  sprintf(datagramFormat, "zI%i%%-%is\r", blocks, blocks * 4);
   sprintf(datagram, datagramFormat, text);
+  short datagramLength = strlen(datagram);
+  
+  short hashByte = 0x7F;
+  for(short charPos = 0; charPos < datagramLength; charPos++) {
+    short curByte = datagram[charPos];
+    hashByte ^= curByte;
+  }
+  
   Serial.print(datagram);
+  Serial.write(hashByte);
 }
 
 void setup() {
