@@ -6,12 +6,17 @@ Simple Ethernet wrapper for the IBIS protocol.
 #include <SPI.h>
 #include <Ethernet.h>
 
+#define REFRESH_TIMEOUT 120000 // Two minutes
+
 byte ETH_MAC[] = {0xC0, 0xFF, 0xEE, 0xC0, 0xFF, 0xEE};
 short ETH_PORT = 1337;
 
 EthernetServer ibisServer(ETH_PORT);
+char currentText[150];
+int lastRefresh = millis();
 
 void sendIBIS003c(char* text) {
+  strcpy(currentText, text);
   char datagram[150], datagramFormat[10];
   short length = strlen(text);
   short blocks = length / 4;
@@ -33,6 +38,13 @@ void sendIBIS003c(char* text) {
   
   Serial.print(datagram);
   Serial.write(hashByte);
+  lastRefresh = millis();
+}
+
+void preventTimeout() {
+  if(millis() - lastRefresh >= REFRESH_TIMEOUT) {
+    sendIBIS003c(currentText);
+  }
 }
 
 void setup() {
@@ -53,9 +65,9 @@ void setup() {
 void loop() {
   // Wait for connection
   EthernetClient client = ibisServer.available();
-  char message[150] = {0};
-  short messagePos = 0;
   if(client) {
+    char message[150] = {0};
+    short messagePos = 0;
     while(client.connected()) {
       if(client.available() > 0) {
         // Read data
@@ -67,5 +79,7 @@ void loop() {
     
     // Send the message to the display
     sendIBIS003c(message);
+  } else {
+    preventTimeout();
   }
 }
