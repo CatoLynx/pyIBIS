@@ -140,3 +140,20 @@ class IBISMaster(object):
 		
 		message = "zI%i%s" % (blocks, next_stop)
 		return self.send_message(message)
+	
+	def send_target_text__021t(self, texts, id, cycle):
+		id = "0123456789:;<=>?"[id]
+		cycle = "0123456789:;<=>?"[cycle]
+		
+		data = "A" + cycle
+		for top_line, bottom_line in texts:
+			data += prepare_text(top_line) + "\n"
+			data += prepare_text(bottom_line) + "\n\n"
+		
+		num_blocks, remainder = divmod(len(data), 16)
+		if remainder:
+			num_blocks += 1
+			data += " " * (16 - remainder)
+		
+		message = "aA%s%i%s" % (id, num_blocks, data)
+		return self.send_message(message)
