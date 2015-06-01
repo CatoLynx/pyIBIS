@@ -72,6 +72,10 @@ class DisplayManager(object):
 			if num == -1:
 				artist = raw_input("Artist: ")
 				title = raw_input("Title: ")
+			elif num == 0:
+				self.BUFFER = (' ', ) # Blank the display
+				print "\n"
+				return True
 			else:
 				try:
 					artist, title = self.entries[num - 1]
