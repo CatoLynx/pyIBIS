@@ -75,7 +75,7 @@ class DisplayManager(object):
 			elif num == 0:
 				self.BUFFER = (' ', ) # Blank the display
 				print "\n"
-				return True
+				continue
 			else:
 				try:
 					artist, title = self.entries[num - 1]
